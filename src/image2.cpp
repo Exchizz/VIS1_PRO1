@@ -33,16 +33,22 @@ int main(int argc, char** argv )
     int hist_w = 512; int hist_h = 400;
     int bin_w = cvRound( (double) hist_w/histSize );
 
-    Mat histImage( hist_h, hist_w, CV_8UC3, Scalar( 0,0,0) );
+    Mat histImage( hist_h, hist_w, CV_8UC3, Scalar( 255,255,255) );
     normalize(gray_hist, gray_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
     /// Draw for each channel
-    for( int i = 1; i < histSize; i++ )
-        line( histImage, Point( bin_w*(i-1), hist_h - cvRound(gray_hist.at<float>(i-1)) ) ,
-                         Point( bin_w*(i), hist_h - cvRound(gray_hist.at<float>(i)) ),
-                         Scalar( 255,255, 255), 2, 8, 0  );
-    namedWindow("Histogram", CV_WINDOW_AUTOSIZE );
+    for( int i = 0; i < histSize; i++ )
+    {
+      rectangle( histImage,
+           cv::Point(bin_w*(i),hist_h),
+           cv::Point(bin_w*(i+1)-1,hist_h - cvRound(gray_hist.at<float>(i))),
+           Scalar( 0,saturate_cast<uchar>(gray_hist.at<float>(i)*5), 0),
+           -1);
+        std::cout << "Bin no. " << i << " " << cvRound(gray_hist.at<float>(i)) << " and " << gray_hist.at<float>(i) << std::endl;
+    }
+    namedWindow("Histogram", CV_WINDOW_NORMAL );
     imshow("Histogram", histImage );
 
+    // Histogram equalization http://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_equalization/histogram_equalization.html
 
     //namedWindow("Display Image", CV_WINDOW_AUTOSIZE );
     //imshow("Display Image", image);
