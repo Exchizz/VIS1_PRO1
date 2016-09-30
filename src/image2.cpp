@@ -19,8 +19,33 @@ int main(int argc, char** argv )
         printf("No image data \n");
         return -1;
     }
-    namedWindow("Display Image", CV_WINDOW_AUTOSIZE );
-    imshow("Display Image", image);
+
+    // Histogram code based on http://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html
+    cvtColor(image, image, CV_BGR2GRAY); // Ensure image is grayscale with one channel
+    int histSize = 256; //from 0 to 255
+    /// Set the ranges
+    float range[] = { 0, 256 } ; //the upper boundary is exclusive
+    const float* histRange = { range };
+    bool uniform = true; bool accumulate = false;
+    Mat gray_hist;
+    calcHist( &image, 1, 0, Mat(), gray_hist, 1, &histSize, &histRange, uniform, accumulate );
+
+    int hist_w = 512; int hist_h = 400;
+    int bin_w = cvRound( (double) hist_w/histSize );
+
+    Mat histImage( hist_h, hist_w, CV_8UC3, Scalar( 0,0,0) );
+    normalize(gray_hist, gray_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
+    /// Draw for each channel
+    for( int i = 1; i < histSize; i++ )
+        line( histImage, Point( bin_w*(i-1), hist_h - cvRound(gray_hist.at<float>(i-1)) ) ,
+                         Point( bin_w*(i), hist_h - cvRound(gray_hist.at<float>(i)) ),
+                         Scalar( 255,255, 255), 2, 8, 0  );
+    namedWindow("Histogram", CV_WINDOW_AUTOSIZE );
+    imshow("Histogram", histImage );
+
+
+    //namedWindow("Display Image", CV_WINDOW_AUTOSIZE );
+    //imshow("Display Image", image);
 
     waitKey(0);
 
