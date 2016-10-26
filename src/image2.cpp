@@ -60,7 +60,6 @@ int main(int argc, char** argv )
     namedWindow("Histogram", CV_WINDOW_NORMAL );
     imshow("Histogram", histImage );
 
-    // Histogram equalization http://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_equalization/histogram_equalization.html
 
     //namedWindow("Display Image", CV_WINDOW_AUTOSIZE );
     //imshow("Display Image", image);
