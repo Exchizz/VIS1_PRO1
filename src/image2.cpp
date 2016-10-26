@@ -20,15 +20,19 @@ int main(int argc, char** argv )
         return -1;
     }
 
-    // Histogram code based on http://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html
     cvtColor(image, image, CV_BGR2GRAY); // Ensure image is grayscale with one channel
+
+    // rectangle(image, Point(1000, 1300), Point(1100, 1400), 0); // Draw crop rectangle on input image (in white)
+    Mat image_noise_crop = image(Rect(Point(1000, 1300), Point(1100, 1400)));
+
+    // Histogram code - START - inspired from http://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html
     int histSize = 256; //from 0 to 255
     /// Set the ranges
     float range[] = { 0, 256 } ; //the upper boundary is exclusive
     const float* histRange = { range };
     bool uniform = true; bool accumulate = false;
     Mat gray_hist;
-    calcHist( &image, 1, 0, Mat(), gray_hist, 1, &histSize, &histRange, uniform, accumulate );
+    calcHist( &image_noise_crop, 1, 0, Mat(), gray_hist, 1, &histSize, &histRange, uniform, accumulate ); // Inout image goes here
 
     int hist_w = 512; int hist_h = 400;
     int bin_w = cvRound( (double) hist_w/histSize );
@@ -43,8 +47,13 @@ int main(int argc, char** argv )
            cv::Point(bin_w*(i+1)-1,hist_h - cvRound(gray_hist.at<float>(i))),
            Scalar( 0,saturate_cast<uchar>(gray_hist.at<float>(i)*5), 0),
            -1);
-        std::cout << "Bin no. " << i << " " << cvRound(gray_hist.at<float>(i)) << " and " << gray_hist.at<float>(i) << std::endl;
+        //std::cout << "Bin no. " << i << " " << cvRound(gray_hist.at<float>(i)) << " and " << gray_hist.at<float>(i) << std::endl;
     }
+    // Histogram code - END
+
+    namedWindow("Input Image", CV_WINDOW_NORMAL );
+    imshow("Input Image", image);
+
     namedWindow("Histogram", CV_WINDOW_NORMAL );
     imshow("Histogram", histImage );
 
