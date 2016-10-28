@@ -13,5 +13,6 @@ void dftshift(cv::Mat_<float> & magnitude);
 void MagnitudePhase(cv::Mat & inputSrc, cv::Mat & magnitude, cv::Mat & magnitudeLog, cv::Mat & phase);
 void InverseMagnitudePhase(cv::Mat & inputMagnitude, cv::Mat & inputPhase, cv::Mat & oldImage, cv::Mat & output_image);
 void FilterContraharmonicMean(cv::Mat & inputImage, cv::Mat & outputImage, int kernel_size, int Q);
+void ContrastStretching(cv::Mat & inputImage, cv::Mat & outputImage);
 
 #endif

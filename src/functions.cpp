@@ -123,7 +123,7 @@ void FilterContraharmonicMean(cv::Mat & inputImage, cv::Mat & outputImage, int k
 // Function: Contraharmonic mean filter.
 // Description: For positive values of Q, the filter eliminates pepper noise. For negative values of Q it eliminates salt noise.
 // NOTE: the kernel size is given as the height or width of the kernel and should be odd, not the area of the kernel
-// Made from eq 5.3-6 in GW book
+// Made from eq 5.3-6 in GW book p. 323
 {
     int im_max_col = inputImage.cols;
     int im_max_row = inputImage.rows;
@@ -149,6 +149,25 @@ void FilterContraharmonicMean(cv::Mat & inputImage, cv::Mat & outputImage, int k
                 outputImage.at<uchar>(row,col) = round(num/den);
             else
                 outputImage.at<uchar>(row,col) = 255;
+        }
+    }
+}
+
+void ContrastStretching(cv::Mat & inputImage, cv::Mat & outputImage)
+// https://www.bruzed.com/2009/10/contrast-stretching-and-histogram-equalization/
+{
+    int max_8u = 255;
+    int im_max_col = inputImage.cols;
+    int im_max_row = inputImage.rows;
+
+    double min, max;
+    cv::minMaxLoc(inputImage, &min, &max);
+    std::cout << "Max: " << max << std::endl;
+    std::cout << "Min: " << min << std::endl;
+
+    for (int row = 0; row < im_max_row; row++) {
+        for (int col = 0; col < im_max_col; col++) {
+            outputImage.at<uchar>(row,col) = round(((inputImage.at<uchar>(row,col) - min) / (max - min)) * max_8u);
         }
     }
 }

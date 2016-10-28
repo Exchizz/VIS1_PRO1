@@ -48,12 +48,17 @@ int main(int argc, char** argv )
     namedWindow("Input Image", CV_WINDOW_NORMAL );
     imshow("Input Image", image);
 
-    Mat filteredImage;
+    Mat filteredImage, csImage; //cs=ContrastStretching
     image.copyTo(filteredImage);
+    image.copyTo(csImage);
 
     FilterContraharmonicMean(image, filteredImage, 5, 1);
     namedWindow("filteredImage", CV_WINDOW_NORMAL );
     imshow("filteredImage", filteredImage);
+    ContrastStretching(filteredImage, csImage);
+    namedWindow("csImage", CV_WINDOW_NORMAL );
+    imshow("csImage", csImage);
+
 
     waitKey(0);
     return 0;
