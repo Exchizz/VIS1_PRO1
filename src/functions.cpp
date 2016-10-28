@@ -118,3 +118,37 @@ void InverseMagnitudePhase(cv::Mat & inputMagnitude, cv::Mat & inputPhase, cv::M
 
     output_image = output_image(cv::Rect(0,0,imgCols,imgRows));
 }
+
+void FilterContraharmonicMean(cv::Mat & inputImage, cv::Mat & outputImage, int kernel_size, int Q)
+// Function: Contraharmonic mean filter.
+// Description: For positive values of Q, the filter eliminates pepper noise. For negative values of Q it eliminates salt noise.
+// NOTE: the kernel size is given as the height or width of the kernel and should be odd, not the area of the kernel
+// Made from eq 5.3-6 in GW book
+{
+    int im_max_col = inputImage.cols;
+    int im_max_row = inputImage.rows;
+    int x = 0;
+    int y = 0;
+    int internal_kernel = (kernel_size-1)/2;
+
+    for (int row = 0; row < im_max_row; row++) {
+        for (int col = 0; col < im_max_col; col++) {
+            int num = 0;
+            int den = 0;
+            for (int s = -internal_kernel; s <= internal_kernel; s++) { // NOTE: you cannot use size_t here!!
+              for (int t = -internal_kernel; t <= internal_kernel; t++) {
+                  x = col + s;
+                  y = row + t;
+                  if ((x >= 0 and x<im_max_col) and (y>=0 and y<im_max_row)) {
+                      num += pow(inputImage.at<uchar>(y,x),Q+1);
+                      den += pow(inputImage.at<uchar>(y,x),Q);
+                  }
+              }
+            }
+            if (den != 0)
+                outputImage.at<uchar>(row,col) = round(num/den);
+            else
+                outputImage.at<uchar>(row,col) = 255;
+        }
+    }
+}
