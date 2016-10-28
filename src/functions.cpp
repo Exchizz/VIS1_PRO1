@@ -64,7 +64,9 @@ void dftshift(cv::Mat_<float> & magnitude) {
   tmp.copyTo(bottomLeft);
 }
 
-void MagnitudePhase(cv::Mat & inputSrc, cv::Mat & magnitude, cv::Mat & magnitudeLog, cv::Mat & phase) {
+void MagnitudePhase(cv::Mat & inputSrc, cv::Mat & magnitude, cv::Mat & magnitudeLog, cv::Mat & phase)
+// http://docs.opencv.org/2.4/doc/tutorials/core/discrete_fourier_transform/discrete_fourier_transform.html
+{
     // Make an internal copy to avoid Mat type errors
     cv::Mat_<float> tempInputSrc;
     inputSrc.convertTo(tempInputSrc, CV_32F);
@@ -102,7 +104,9 @@ void MagnitudePhase(cv::Mat & inputSrc, cv::Mat & magnitude, cv::Mat & magnitude
     tempPhase.copyTo(phase);
 }
 
-void InverseMagnitudePhase(cv::Mat & inputMagnitude, cv::Mat & inputPhase, cv::Mat & oldImage, cv::Mat & output_image) {
+void InverseMagnitudePhase(cv::Mat & inputMagnitude, cv::Mat & inputPhase, cv::Mat & oldImage, cv::Mat & output_image)
+// http://docs.opencv.org/2.4/doc/tutorials/core/discrete_fourier_transform/discrete_fourier_transform.html
+{
     int imgRows = oldImage.rows;
     int imgCols = oldImage.cols;
     cv::Mat_<float> tempMagnitude = inputMagnitude.clone(); // Do not mess with external passed image
@@ -146,7 +150,7 @@ void FilterContraharmonicMean(cv::Mat & inputImage, cv::Mat & outputImage, int k
               }
             }
             if (den != 0)
-                outputImage.at<uchar>(row,col) = round(num/den);
+                outputImage.at<uchar>(row,col) = static_cast<uchar>(round(num/den));
             else
                 outputImage.at<uchar>(row,col) = 255;
         }

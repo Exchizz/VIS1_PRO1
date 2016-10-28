@@ -48,9 +48,10 @@ int main(int argc, char** argv )
     namedWindow("Input Image", CV_WINDOW_NORMAL );
     imshow("Input Image", image);
 
-    Mat filteredImage, csImage; //cs=ContrastStretching
+    Mat filteredImage, csImage, equalHist; //cs=ContrastStretching
     image.copyTo(filteredImage);
     image.copyTo(csImage);
+    image.copyTo(equalHist);
 
     FilterContraharmonicMean(image, filteredImage, 5, 1);
     namedWindow("filteredImage", CV_WINDOW_NORMAL );
@@ -58,6 +59,9 @@ int main(int argc, char** argv )
     ContrastStretching(filteredImage, csImage);
     namedWindow("csImage", CV_WINDOW_NORMAL );
     imshow("csImage", csImage);
+    equalizeHist(csImage, equalHist); //equalize the histogram
+    namedWindow("equalHist", CV_WINDOW_NORMAL );
+    imshow("equalHist", equalHist);
 
 
     waitKey(0);
