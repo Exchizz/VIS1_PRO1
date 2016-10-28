@@ -7,14 +7,14 @@ using namespace cv;
 
 int main(int argc, char** argv )
 {
-    if ( argc != 2 )
-    {
-        printf("usage: DisplayImage.out <Image_Path>\n");
-        return -1;
-    }
+    // if ( argc != 2 )
+    // {
+    //     printf("usage: DisplayImage.out <Image_Path>\n");
+    //     return -1;
+    // }
     Mat image;
-    image = imread( argv[1], CV_LOAD_IMAGE_GRAYSCALE );
-    //image = cv::imread("ImagesForStudents/Image2.png", CV_LOAD_IMAGE_GRAYSCALE);
+    //image = imread( argv[1], CV_LOAD_IMAGE_GRAYSCALE );
+    image = cv::imread("ImagesForStudents/Image2.png", CV_LOAD_IMAGE_GRAYSCALE);
 
     if ( !image.data )
     {
