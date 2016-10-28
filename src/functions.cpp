@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string>
+#include <algorithm>    // std::sort
 #include <opencv2/opencv.hpp>
 #include "functions.hpp"
 
@@ -174,4 +175,68 @@ void ContrastStretching(cv::Mat & inputImage, cv::Mat & outputImage)
             outputImage.at<uchar>(row,col) = round(((inputImage.at<uchar>(row,col) - min) / (max - min)) * max_8u);
         }
     }
+}
+
+void FilterAdaptiveMedian(cv::Mat & inputImage, cv::Mat & outputImage, int start_kernel_size, int max_kernel_size, int z_min, int z_max)
+// Function: Contraharmonic mean filter.
+// Description: The adaptive median filtering can handle impulse noise with large probabilities
+// NOTE: the kernel size is given as the height or width of the kernel and should be odd, not the area of the kernel
+// Made from pseudo code in GW book p. 333
+// Typical values: start_kernel_size=3, z_min = 0, z_max=255
+{
+    int im_max_col = inputImage.cols;
+    int im_max_row = inputImage.rows;
+    int x = 0;
+    int y = 0;
+    int internal_start_kernel_size    = (start_kernel_size-1)/2;
+    int internal_kernel             = internal_start_kernel_size;
+    int internal_max_kernel_size    = (max_kernel_size-1)/2;
+    vector<int> point_values;
+
+    for (int row = 0; row < im_max_row; row++) {
+        for (int col = 0; col < im_max_col; col++) {
+            // Loop over pixels / image started
+            internal_kernel = internal_start_kernel_size;
+            while (true) {
+                point_values.clear();
+                for (int s = -internal_kernel; s <= internal_kernel; s++) { // NOTE: you cannot use size_t here!!
+                  for (int t = -internal_kernel; t <= internal_kernel; t++) {
+                      x = col + s;
+                      y = row + t;
+                      if ((x >= 0 and x<im_max_col) and (y>=0 and y<im_max_row))
+                          point_values.push_back(inputImage.at<uchar>(y,x));
+                      else
+                        point_values.push_back(0);
+                  }
+                }
+                std::sort (point_values.begin(), point_values.end());
+                double z_med = 0;
+                if (point_values.size()%2 == 0) {
+                    z_med = point_values.at((point_values.size())/2);
+                    z_med += point_values.at((point_values.size()/2)+1);
+                    z_med /= 2;
+                } else
+                    z_med = point_values.at((point_values.size()+1)/2);
+                int A1 = z_med - z_min;
+                int A2 = z_med - z_max;
+                if ((A1>0) and (A2<0)) {
+                    int B1 = inputImage.at<uchar>(row,col) - z_min;
+                    int B2 = inputImage.at<uchar>(row,col) - z_max;
+                    if ((B1>0) and (B2<0))
+                        outputImage.at<uchar>(row,col) = inputImage.at<uchar>(row,col);
+                    else
+                        outputImage.at<uchar>(row,col) = z_med;
+                    break;
+                } else {
+                    internal_kernel++;
+                    if (internal_kernel >= internal_max_kernel_size) {
+                        outputImage.at<uchar>(row,col) = z_med;
+                        break;
+                    }
+                }
+            }
+            // Loop over pixels / image ended
+        }
+    }
+
 }

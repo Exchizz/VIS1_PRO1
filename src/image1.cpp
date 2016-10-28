@@ -35,7 +35,7 @@ int main(int argc, char** argv )
     FilterContraharmonicMean(image, filteredImage, 5, 1);
     namedWindow("filteredImage", CV_WINDOW_NORMAL );
     imshow("filteredImage", filteredImage);
-    SaveImage(filteredImage, "im1-ContraharmonicMean-to-ContraharmonicMean", false); // Last parameter is weather the image is normalized
+    SaveImage(filteredImage, "im1-input-to-ContraharmonicMean", false); // Last parameter is weather the image is normalized
 
     ContrastStretching(filteredImage, csImage);
     namedWindow("csImage", CV_WINDOW_NORMAL );
