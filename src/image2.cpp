@@ -14,7 +14,8 @@ int main(int argc, char** argv )
     }
 
     Mat image;
-    image = imread( argv[1], 1 );
+    image = imread( argv[1], CV_LOAD_IMAGE_GRAYSCALE );
+    //image = cv::imread("ImagesForStudents/Image2.png", CV_LOAD_IMAGE_GRAYSCALE);
 
     if ( !image.data )
     {
@@ -22,29 +23,31 @@ int main(int argc, char** argv )
         return -1;
     }
 
-    cvtColor(image, image, CV_BGR2GRAY); // Ensure image is grayscale with one channel
-
     // rectangle(image, Point(1000, 1300), Point(1100, 1400), 0); // Draw crop rectangle on input image (in white)
     Mat image_noise_crop = image(Rect(Point(1000, 1300), Point(1100, 1400)));
-
     Mat histImage;
     MakeHist(image_noise_crop, histImage);
+    namedWindow("Histogram", CV_WINDOW_NORMAL );
+    imshow("Histogram", histImage );
+    SaveImage(histImage, "hist_crop_im1", false);
 
-    Mat mag,phase;
-    MagnitudePhase(image, mag, phase);
-    //Mat imgout;
-    //InverseMagnitudePhase(mag, phase, imgout);
+    Mat mag,magLog,phase;
+    MagnitudePhase(image, mag, magLog, phase); // 1st argument is input and the other 3 are outputs
+    Mat imgout;
+    InverseMagnitudePhase(mag, phase, image, imgout);
 
+    cv::normalize(magLog, magLog, 0.0, 1.0, CV_MINMAX); // When showing float images the Mat should be normalized first! IMPORTANT !!
     namedWindow("Mag", CV_WINDOW_NORMAL );
-    imshow("Mag", mag);
+    imshow("Mag", magLog);
+    SaveImage(magLog, "magLog_im1", true);
+
+    cv::normalize(imgout, imgout, 0.0, 1.0, CV_MINMAX); // When showing float images the Mat should be normalized first! IMPORTANT !!
+    namedWindow("Output Image", CV_WINDOW_NORMAL );
+    imshow("Output Image", imgout);
+
 
     namedWindow("Input Image", CV_WINDOW_NORMAL );
     imshow("Input Image", image);
-
-    namedWindow("Histogram", CV_WINDOW_NORMAL );
-    imshow("Histogram", histImage );
-
-    SaveImage(histImage, "hist_crop_im1");
 
 
     //namedWindow("Display Image", CV_WINDOW_AUTOSIZE );

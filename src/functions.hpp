@@ -8,10 +8,9 @@ using namespace cv;
 #define FUNCTIONS_H
 
 void MakeHist(Mat & inputSrc, Mat &histImage);
-void SaveImage(Mat & inputSrc, std::string file_name);
-void dftshift(cv::Mat & magnitude);
-void MagnitudePhase(cv::Mat & inputSrc, cv::Mat & magnitude, cv::Mat & phase);
-void InverseMagnitudePhase(cv::Mat & inputMagnitude, cv::Mat & inputPhase, cv::Mat & output_image);
-
+void SaveImage(Mat & inputSrc, std::string file_name, bool inNormalized);
+void dftshift(cv::Mat_<float> & magnitude);
+void MagnitudePhase(cv::Mat & inputSrc, cv::Mat & magnitude, cv::Mat & magnitudeLog, cv::Mat & phase);
+void InverseMagnitudePhase(cv::Mat & inputMagnitude, cv::Mat & inputPhase, cv::Mat & oldImage, cv::Mat & output_image);
 
 #endif

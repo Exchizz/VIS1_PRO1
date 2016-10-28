@@ -33,15 +33,19 @@ void MakeHist(Mat & inputSrc, Mat &histImage){
     // Histogram code - END
 }
 
-void SaveImage(Mat & inputSrc, std::string file_name) {
+void SaveImage(Mat & inputSrc, std::string file_name, bool inNormalized) {
   // Image save code taken from http://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html
   std::vector<int> compression_params;
   compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
   compression_params.push_back(9); // CV_IMWRITE_PNG_COMPRESSION
-  imwrite(file_name+".png", inputSrc, compression_params);
+  if (inNormalized)
+    imwrite(file_name+".png", inputSrc* 255, compression_params);
+  else
+    imwrite(file_name+".png", inputSrc, compression_params);
+
 }
 
-void dftshift(cv::Mat & magnitude) {
+void dftshift(cv::Mat_<float> & magnitude) {
   const int cx = magnitude.cols/2;
   const int cy = magnitude.rows/2;
 
@@ -60,52 +64,57 @@ void dftshift(cv::Mat & magnitude) {
   tmp.copyTo(bottomLeft);
 }
 
-void MagnitudePhase(cv::Mat & inputSrc, cv::Mat & magnitude, cv::Mat & phase) {
-  //Pad the image with borders using copyMakeBorders. Use getOptimalDFTSize(A+B-1). See G&W page 251,252 and 263 and dft tutorial. (Typicly A+B-1 ~ 2A is used)
-   int rows = cv::getOptimalDFTSize(2*inputSrc.rows);
-   int cols = cv::getOptimalDFTSize(2*inputSrc.cols);
-   cv::Mat_<float> img_padded;
-   copyMakeBorder(inputSrc, img_padded, 0, rows - inputSrc.rows, 0, cols - inputSrc.cols, cv::BORDER_CONSTANT, cv::Scalar::all(0));
+void MagnitudePhase(cv::Mat & inputSrc, cv::Mat & magnitude, cv::Mat & magnitudeLog, cv::Mat & phase) {
+    // Make an internal copy to avoid Mat type errors
+    cv::Mat_<float> tempInputSrc;
+    inputSrc.convertTo(tempInputSrc, CV_32F);
+    //inputSrc.copyTo(tempInputSrc);
 
-   //The second channel should be all zeros.
-   cv::Mat_<float> imgs[] = {img_padded.clone(), cv::Mat_<float>(img_padded.rows, img_padded.cols, 0.0f)};
-   cv::Mat_<cv::Vec2f> img_dft;
-   cv::merge(imgs,2,img_dft);
+    //Pad the image with borders using copyMakeBorders. Use getOptimalDFTSize(A+B-1). See G&W page 251,252 and 263 and dft tutorial. (Typicly A+B-1 ~ 2A is used)
+    int rows = cv::getOptimalDFTSize(2*tempInputSrc.rows);
+    int cols = cv::getOptimalDFTSize(2*tempInputSrc.cols);
+    cv::Mat_<float> img_padded;
+    copyMakeBorder(tempInputSrc, img_padded, 0, rows - tempInputSrc.rows, 0, cols - tempInputSrc.cols, cv::BORDER_CONSTANT, cv::Scalar::all(0));
 
-   // Compute DFT using img_dft as input
-   cv::dft(img_dft, img_dft);
+    //The second channel should be all zeros.
+    cv::Mat_<float> imgs[] = {img_padded.clone(), cv::Mat_<float>(img_padded.rows, img_padded.cols, 0.0f)};
+    cv::Mat_<cv::Vec2f> img_dft;
+    cv::merge(imgs,2,img_dft);
 
-   // Split img_dft, you can save result into imgs
-   cv::split(img_dft, imgs);
+    cv::dft(img_dft, img_dft); // Compute DFT using img_dft as input
+    cv::split(img_dft, imgs); // Split img_dft, you can save result into imgs
 
-   cv::Mat_<float> tempMagnitude, tempPhase;
-   tempMagnitude.copyTo(magnitude);
-   tempPhase.copyTo(phase);
+    cv::Mat_<float> tempMagnitude, tempPhase; // Make temp Mats for phase and mag
+    cv::cartToPolar(imgs[0],imgs[1],tempMagnitude,tempPhase);
 
-   cv::cartToPolar(imgs[0],imgs[1],magnitude,phase);
+    // Shift magnitude quadrants for viewability, use dftshift
+    dftshift(tempMagnitude);
 
-   // Shift magnitude quadrants for viewability, use dftshift
-   dftshift(magnitude);
+    // Take logarithm of magnitude  (log())
+    cv::Mat_<float> magnitudel;
+    magnitudel = tempMagnitude.clone();
+    magnitudel += cv::Scalar::all(1); // switch to logarithmic scale
+    cv::log(magnitudel, magnitudel);
+
+    // Copy internal images to input arguments
+    tempMagnitude.copyTo(magnitude);
+    magnitudel.copyTo(magnitudeLog);
+    tempPhase.copyTo(phase);
 }
 
-void InverseMagnitudePhase(cv::Mat & inputMagnitude, cv::Mat & inputPhase, cv::Mat & output_image) {
-  cv::Mat_<float> magnitude2 = inputMagnitude.clone();
-  // Shift back magnitude quadrants of the spectrum, use dftshift();
- dftshift(magnitude2);
+void InverseMagnitudePhase(cv::Mat & inputMagnitude, cv::Mat & inputPhase, cv::Mat & oldImage, cv::Mat & output_image) {
+    int imgRows = oldImage.rows;
+    int imgCols = oldImage.cols;
+    cv::Mat_<float> tempMagnitude = inputMagnitude.clone(); // Do not mess with external passed image
+    dftshift(tempMagnitude); // Shift back magnitude quadrants of the spectrum, use dftshift();
 
- cv::Mat_<float> imgs[2];
- // Compute complex DFT output from magnitude/phase (polarToCart()), store result in imgs
- polarToCart(magnitude2,inputPhase,imgs[0],imgs[1]);
+    cv::Mat_<float> imgs[2];
+    polarToCart(tempMagnitude,inputPhase,imgs[0],imgs[1]); // Compute complex DFT output from magnitude/phase (polarToCart()), store result in imgs
 
- // Merge DFT (imgs) into one image
- //cv::Mat one_image;
- cv::merge(imgs,2,output_image);
+    cv::merge(imgs,2,output_image); // Merge DFT (imgs) into one image
 
- //Restore, use dft with DFT_INVERSE flag, save result in imgout
- cv::dft(output_image, output_image, cv::DFT_INVERSE + cv::DFT_SCALE + cv::DFT_REAL_OUTPUT);
+    //Restore, use dft with DFT_INVERSE flag, save result in imgout
+    cv::dft(output_image, output_image, cv::DFT_INVERSE| cv::DFT_REAL_OUTPUT);
 
- // Show
-  cv::normalize(output_image, output_image, 0.0, 1.0, CV_MINMAX);
-  cv::normalize(magnitude2, magnitude2, 0.0, 1.0, CV_MINMAX);
-  cv::normalize(inputPhase, inputPhase, 0.0, 1.0, CV_MINMAX);
+    output_image = output_image(cv::Rect(0,0,imgCols,imgRows));
 }
