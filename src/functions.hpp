@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string>
 #include <opencv2/opencv.hpp>
-
+#include <vector>
 using namespace cv;
 
 #ifndef FUNCTIONS_H
@@ -16,7 +16,15 @@ void FilterContraharmonicMean(cv::Mat & inputImage, cv::Mat & outputImage, int k
 void ContrastStretching(cv::Mat & inputImage, cv::Mat & outputImage);
 void FilterAdaptiveMedian(cv::Mat & inputImage, cv::Mat & outputImage, int start_kernel_size, int max_kernel_size, int z_min, int z_max);
 
-
+struct Center {
+        int x;
+        int y;
+	Center(int x, int y){
+		this->x = x;
+		this->y = y;
+	}
+};
+void ApplyNotchFilter(Mat & magnitudeInput, Mat & phaseInput, std::vector<Center> notch_centers, int d0k, unsigned int n);
 // We probably also need the following functions (DO NOT DELETE)
 // - Sharpen
 // - Butterworth (notch highpass) G&W section 4.10 - for the frequency filtering - could be nice if it takes points in a vec as input and then a width for the filter and filters the points away.

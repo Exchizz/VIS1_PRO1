@@ -4,6 +4,48 @@
 #include <opencv2/opencv.hpp>
 #include "functions.hpp"
 
+/*
+	magnitudeInput: output of DFT
+	magnitudeOut: Output with applied notch filter
+	uk = location of center freq. in notch filter
+	vk = -||-
+	d0k = radius, visual inspection in image
+	n = filter order
+*/
+void ApplyNotchFilter(Mat & magnitudeInput, Mat & phaseInput, std::vector<Center> notch_centers, int d0k, unsigned int n){
+	// Get padded image size
+	const int wx = magnitudeInput.cols, wy = magnitudeInput.rows;
+	int cx = wx/2, cy = wy/2;
+
+	cv::Mat_<float> hpf(wy, wx);
+
+	for(int y = 0; y < wy; ++y) {
+		for(int x = 0; x < wx; ++x) {
+			//formular at page. 317
+			float outputPixel = 1;
+			for(Center point : notch_centers){
+				int pktx = point.x-cx;
+				int pkty = point.y-cy;
+
+				const double Dk  = std::sqrt( powf(x-cx-pktx,2) + powf(y-cy-pkty,2) );
+				const double DkMinus = std::sqrt( powf(x-cx+pktx,2) + powf(y-cy+pkty,2) );
+				outputPixel *= ( 1/( 1 + powf(((float)d0k/Dk),2*n) ) ) * ( 1/( 1 + powf(((float)d0k/DkMinus),2*n)  ) );
+			}
+
+			hpf.at<float>(y, x) = outputPixel;
+		}
+	}
+
+    //Display and save the notch filter
+    cv::normalize(hpf, hpf, 0.0, 1.0, CV_MINMAX);
+    namedWindow("HPF", CV_WINDOW_NORMAL );
+    cv::imshow("HPF", hpf);
+    SaveImage(hpf, "notch_filter_im4_2.png",true);
+
+   magnitudeInput = magnitudeInput.mul(hpf);
+
+}
+
 void MakeHist(Mat & inputSrc, Mat &histImage){
     int histSize = 256; //from 0 to 255
     /// Set the ranges
@@ -76,6 +118,9 @@ void MagnitudePhase(cv::Mat & inputSrc, cv::Mat & magnitude, cv::Mat & magnitude
     //Pad the image with borders using copyMakeBorders. Use getOptimalDFTSize(A+B-1). See G&W page 251,252 and 263 and dft tutorial. (Typicly A+B-1 ~ 2A is used)
     int rows = cv::getOptimalDFTSize(2*tempInputSrc.rows);
     int cols = cv::getOptimalDFTSize(2*tempInputSrc.cols);
+
+   std::cout << "magnitudePhase: rows, cols: " << rows << "," << cols << std::endl;
+
     cv::Mat_<float> img_padded;
     copyMakeBorder(tempInputSrc, img_padded, 0, rows - tempInputSrc.rows, 0, cols - tempInputSrc.cols, cv::BORDER_CONSTANT, cv::Scalar::all(0));
 
@@ -191,7 +236,7 @@ void FilterAdaptiveMedian(cv::Mat & inputImage, cv::Mat & outputImage, int start
     int internal_start_kernel_size    = (start_kernel_size-1)/2;
     int internal_kernel             = internal_start_kernel_size;
     int internal_max_kernel_size    = (max_kernel_size-1)/2;
-    vector<int> point_values;
+    std::vector<int> point_values;
 
     for (int row = 0; row < im_max_row; row++) {
         for (int col = 0; col < im_max_col; col++) {
