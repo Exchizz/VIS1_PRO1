@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(VIS_PRO1)
 
+ADD_DEFINITIONS(
+    -std=c++11 # Or -std=c++0x
+    # Other flags
+)
 find_package(OpenCV REQUIRED)
 
 
