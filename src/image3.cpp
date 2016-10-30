@@ -38,7 +38,7 @@ int main(int argc, char** argv )
     SharpenFilter(image,kernel);
     cv::namedWindow("Output sharpened",CV_WINDOW_NORMAL);
     cv::imshow("Output sharpened", image);
-
+    SaveImage(image,"result_im3", false);
     cv::waitKey(0);
 
     return 0;
