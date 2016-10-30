@@ -55,11 +55,20 @@ int main(int argc, char** argv )
     image.copyTo(csImage);
     image.copyTo(equalHist);
 
-    FilterAdaptiveMedian(image, filteredImage, 3, 5, 0, 255); // A max_kernel of 15 gives the optimal (only small noise reduction from 13 to 15 but visually none from 15 to 17). If time is a criteria it ca be lowered to 11 without major loss.
+
+    Mat image_noise_crop = image(Rect(Point(1000, 1300), Point(1100, 1400)));
+    SaveImage(image_noise_crop, "neutral_im1", false); // Last parameter is weather the image is normalized
+
+    FilterAdaptiveMedian(image, filteredImage, 3, 15, 0, 255); // A max_kernel of 15 gives the optimal (only small noise reduction from 13 to 15 but visually none from 15 to 17). If time is a criteria it ca be lowered to 11 without major loss.
     namedWindow("filteredImage", CV_WINDOW_NORMAL );
     imshow("filteredImage", filteredImage);
     SaveImage(filteredImage, "im2-input-to-AdaptiveMedian", false); // Last parameter is weather the image is normalized
 
+    image_noise_crop = filteredImage(Rect(Point(1000, 1300), Point(1100, 1400)));
+    Mat histImage;
+    MakeHist(image_noise_crop, histImage);
+    SaveImage(histImage, "hist_crop_im1_after", false); // Last parameter is weather the image is normalized
+    SaveImage(image_noise_crop, "neutral_im1_after", false); // Last parameter is weather the image is normalized
 
     ContrastStretching(filteredImage, csImage);
     namedWindow("csImage", CV_WINDOW_NORMAL );

@@ -21,10 +21,7 @@ int main(int argc, char** argv )
 
     //rectangle(image, Point(1000, 1300), Point(1100, 1400), 0); // Draw crop rectangle on input image (in white)
     Mat image_noise_crop = image(Rect(Point(1000, 1300), Point(1100, 1400)));
-    Mat histImage;
-    MakeHist(image_noise_crop, histImage);
-    namedWindow("Histogram", CV_WINDOW_NORMAL );
-    imshow("Histogram", histImage );
+    SaveImage(image_noise_crop, "neutral_im1", false); // Last parameter is weather the image is normalized
 
     Mat filteredImage, csImage, equalHist, filteredImage2nd; //cs=ContrastStretching
     image.copyTo(filteredImage);
@@ -36,6 +33,14 @@ int main(int argc, char** argv )
     namedWindow("filteredImage", CV_WINDOW_NORMAL );
     imshow("filteredImage", filteredImage);
     SaveImage(filteredImage, "im1-input-to-ContraharmonicMean", false); // Last parameter is weather the image is normalized
+
+    image_noise_crop = filteredImage(Rect(Point(1000, 1300), Point(1100, 1400)));
+    Mat histImage;
+    MakeHist(image_noise_crop, histImage);
+    namedWindow("Histogram", CV_WINDOW_NORMAL );
+    imshow("Histogram", histImage );
+    SaveImage(histImage, "hist_crop_im1_after", false); // Last parameter is weather the image is normalized
+    SaveImage(image_noise_crop, "neutral_im1_after", false); // Last parameter is weather the image is normalized
 
     ContrastStretching(filteredImage, csImage);
     namedWindow("csImage", CV_WINDOW_NORMAL );
