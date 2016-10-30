@@ -55,7 +55,7 @@ int main(int argc, char** argv )
     cv::normalize(imgout, imgout, 0.0, 1.0, CV_MINMAX); // When showing float images the Mat should be normalized first! IMPORTANT !!
     namedWindow("Output Image", CV_WINDOW_NORMAL );
     imshow("Output Image", imgout);
-    SaveImage(magnitude, "result_im4_2", true);
+    SaveImage(imgout, "result_im4_2", true);
 
     image_noise_crop = magnitude(Rect(Point(1000, 1300), Point(1100, 1400)));
     SaveImage(image_noise_crop, "image_noise_crop_after", true);
