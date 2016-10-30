@@ -4,6 +4,31 @@
 #include <opencv2/opencv.hpp>
 #include "functions.hpp"
 
+
+/*
+Generate kernel using:
+    //Apply 3x3 box filter
+    cv::Mat_<float> kernel(3,3);
+    kernel << 0,  1, 0,
+              1, -4, 1,
+              0,  1, 0;
+
+*/
+void SharpenFilter(Mat & InputSrc, Mat & kernel){
+
+    int type = InputSrc.type();
+    Mat afterKernel;
+    cv::filter2D(InputSrc, afterKernel, CV_32F, kernel, cv::Point(-1,-1), 0.0, cv::BORDER_REPLICATE);
+
+    InputSrc.convertTo(InputSrc, CV_32F);
+    Mat imgResult = InputSrc - afterKernel;
+
+    //convert back to original type
+    imgResult.convertTo(InputSrc, type);
+}
+
+
+
 /*
 	magnitudeInput: output of DFT
 	magnitudeOut: Output with applied notch filter

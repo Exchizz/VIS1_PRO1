@@ -25,11 +25,12 @@ struct Center {
 	}
 };
 void ApplyNotchFilter(Mat & magnitudeInput, Mat & phaseInput, std::vector<Center> notch_centers, int d0k, unsigned int n);
+void SharpenFilter(Mat & InputSrc, Mat & kernel);
+
 // We probably also need the following functions (DO NOT DELETE)
 // - Sharpen
 // - Butterworth (notch highpass) G&W section 4.10 - for the frequency filtering - could be nice if it takes points in a vec as input and then a width for the filter and filters the points away.
-// - Bilateral filter - see pp. lec 05 part 2 slide 28 : OpenCV has a func called bilateralFilter, see http://docs.opencv.org/2.4/doc/tutorials/imgproc/gausian_median_blur_bilateral_filter/
-gausian_median_blur_bilateral_filter.html
+// - Bilateral filter - see pp. lec 05 part 2 slide 28 : OpenCV has a func called bilateralFilter, see http://docs.opencv.org/2.4/doc/tutorials/imgproc/gausian_median_blur_bilateral_filter/gausian_median_blur_bilateral_filter.html
 // The following pictures have been treated and output images saved to sharelatex: 1,2,4
 
 #endif
